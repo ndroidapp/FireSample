@@ -20,10 +20,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnUpload;
     private Button btnRetrieve;
     private TextView textView;
-    private EditText etMsg;
+    private EditText etId, etName, etPrice;
 
     FirebaseDatabase database;
     DatabaseReference myRef;
+
+    Product product;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,33 +35,50 @@ public class MainActivity extends AppCompatActivity {
         this.textView = findViewById(R.id.textView);
         this.btnRetrieve = findViewById(R.id.btnRetrieve);
         this.btnUpload = findViewById(R.id.btnUpload);
-        this.etMsg=findViewById(R.id.etMsg);
+        this.etId =findViewById(R.id.etId);
+        this.etName =findViewById(R.id.etName);
+        this.etPrice =findViewById(R.id.etPrice);
 
         database = FirebaseDatabase.getInstance();
-        myRef = database.getReference("message");
+        myRef = database.getReference("Product_Details");
+
+
 
         btnUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myRef.setValue(etMsg.getText().toString());
+                int id=Integer.parseInt(etId.getText().toString());
+                String name=etName.getText().toString();
+                int price=Integer.parseInt(etPrice.getText().toString());
+                product = new Product();
+                product.setId(id);
+                product.setName(name);
+                product.setPrice(price);
+                myRef.setValue(product);
 
             }
         });
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is: " + value);
-                textView.setText(value);
 
-            }
-
+        btnRetrieve.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
+            public void onClick(View v) {
+                myRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // This method is called once with the initial value and again
+                        // whenever data at this location is updated.
+                        Product value = dataSnapshot.getValue(Product.class);
+                        //Log.d(TAG, "Value is: " + value);
+                        textView.setText(value.getId()+"\n"+value.getName()+"\n"+value.getPrice());
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        // Failed to read value
+                        Log.w(TAG, "Failed to read value.", error.toException());
+                    }
+                });
             }
         });
 
